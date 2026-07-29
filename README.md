@@ -111,4 +111,3 @@ All API calls match the Shangazi Foundation backend exactly:
 | `/api/admin/export` | GET | JWT |
 | `/api/admin/audit-logs` | GET | JWT + super_admin |
 # shangazi-frontend
-# shangaziF
