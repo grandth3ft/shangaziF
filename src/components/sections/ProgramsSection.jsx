@@ -1,112 +1,186 @@
-import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import { BookOpen, Stethoscope, Utensils, Home, Users, ArrowRight } from 'lucide-react'
-import SectionHeader from '@/components/shared/SectionHeader'
-import ProgramCard from '@/components/shared/ProgramCard'
-import { staggerContainer, fadeInUp } from '@/utils/animations'
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import {
+  BookOpen,
+  Stethoscope,
+  Utensils,
+  Home,
+  Users,
+  GraduationCap,
+  Shield,
+  Heart,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
+import SectionHeader from "@/components/shared/SectionHeader";
+import ProgramCard from "@/components/shared/ProgramCard";
+import { staggerContainer, fadeInUp } from "@/utils/animations";
+import publicClient from "@/api/client";
 
-const PROGRAMS = [
+// Map backend icon strings → lucide-react components
+const ICON_MAP = {
+  BookOpen,
+  Stethoscope,
+  Utensils,
+  Home,
+  Users,
+  GraduationCap,
+  Shield,
+  Heart,
+  Sparkles,
+};
+
+// Map backend color strings → Tailwind gradient classes used by ProgramCard
+const COLOR_MAP = {
+  forest: "bg-gradient-forest",
+  terracotta: "bg-gradient-cta",
+  amber: "bg-gradient-amber",
+  sage: "bg-gradient-forest",
+};
+
+// Fallback — shown only while loading or if API returns nothing
+const FALLBACK_PROGRAMS = [
   {
+    id: "f1",
     icon: BookOpen,
-    title: 'Education',
-    description: 'Sponsoring school fees, uniforms, books, and tutoring for children who would otherwise be out of school.',
-    metric: '320+',
-    metricLabel: 'children in school',
-    color: 'bg-gradient-forest',
+    title: "Education",
+    description:
+      "Sponsoring school fees, uniforms, books, and tutoring for children who would otherwise be out of school.",
+    metric: "320+",
+    metricLabel: "children in school",
+    color: "bg-gradient-forest",
   },
   {
+    id: "f2",
     icon: Stethoscope,
-    title: 'Healthcare',
-    description: 'Regular medical check-ups, vaccinations, dental care, and emergency treatment for all children in our program.',
-    metric: '100%',
-    metricLabel: 'vaccination coverage',
-    color: 'bg-gradient-cta',
+    title: "Healthcare",
+    description:
+      "Regular medical check-ups, vaccinations, dental care, and emergency treatment for all children in our program.",
+    metric: "100%",
+    metricLabel: "vaccination coverage",
+    color: "bg-gradient-cta",
   },
   {
+    id: "f3",
     icon: Utensils,
-    title: 'Feeding Program',
-    description: 'Two nutritious meals a day, seven days a week — because a hungry child cannot learn or grow.',
-    metric: '2,500+',
-    metricLabel: 'meals served monthly',
-    color: 'bg-gradient-amber',
+    title: "Feeding Program",
+    description:
+      "Two nutritious meals a day, seven days a week — because a hungry child cannot learn or grow.",
+    metric: "2,500+",
+    metricLabel: "meals served monthly",
+    color: "bg-gradient-amber",
   },
   {
+    id: "f4",
     icon: Home,
-    title: 'Shelter',
-    description: 'Safe, clean housing for children without families, supported by house parents who provide stability and love.',
-    metric: '80+',
-    metricLabel: 'children housed',
-    color: 'bg-gradient-forest',
+    title: "Shelter",
+    description:
+      "Safe, clean housing for children without families, supported by house parents who provide stability and love.",
+    metric: "80+",
+    metricLabel: "children housed",
+    color: "bg-gradient-forest",
   },
-  {
-    icon: Users,
-    title: 'Mentorship',
-    description: 'One-on-one mentorship pairing children with professionals who invest in their dreams and guide their path.',
-    metric: '45',
-    metricLabel: 'active mentors',
-    color: 'bg-gradient-cta',
-  },
-]
+];
+
+function normalizeProgram(program) {
+  // Pick first metric for the card's single metric pill
+  const firstMetric = program.metrics?.[0];
+  return {
+    ...program,
+    icon: ICON_MAP[program.icon] || Heart,
+    color: COLOR_MAP[program.color] || "bg-gradient-forest",
+    metric: firstMetric?.value || null,
+    metricLabel: firstMetric?.label || null,
+  };
+}
 
 export default function ProgramsSection() {
+  const [programs, setPrograms] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      try {
+        const response = await publicClient.get("/api/programs");
+        const fetched = response.data.data?.programs || [];
+        setPrograms(fetched.map(normalizeProgram));
+      } catch (err) {
+        console.error("Failed to load programs:", err);
+        // Fall back to static so homepage never looks broken
+        setPrograms(FALLBACK_PROGRAMS);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPrograms();
+  }, []);
+
+  const displayPrograms = isLoading
+    ? []
+    : programs.length > 0
+      ? programs
+      : FALLBACK_PROGRAMS;
+
   return (
-    <section className="section bg-ivory-dark" aria-label="Our programs">
+    <section className="section bg-white" aria-label="Our programs">
       <div className="container-content">
         <SectionHeader
           eyebrow="What We Do"
-          title="Programs That Transform Lives"
-          subtitle="Each program is designed to address a specific, critical need — together they create a comprehensive safety net for every child we serve."
+          title="Programs That Change Lives"
+          subtitle="Five interconnected programs that address every dimension of a child's wellbeing — from their belly to their future."
           className="mb-16"
         />
 
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {PROGRAMS.map((program) => (
-            <motion.div key={program.title} variants={fadeInUp}>
-              <ProgramCard program={program} />
-            </motion.div>
-          ))}
+        {/* Loading skeleton */}
+        {isLoading && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-soft shadow-sm-warm overflow-hidden animate-pulse"
+              >
+                <div className="h-52 bg-ash/30" />
+                <div className="p-6 space-y-3">
+                  <div className="h-4 bg-ash/40 rounded w-1/2" />
+                  <div className="h-3 bg-ash/30 rounded w-full" />
+                  <div className="h-3 bg-ash/30 rounded w-4/5" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
-          {/* Community CTA card */}
+        {/* Programs grid */}
+        {!isLoading && (
           <motion.div
-            variants={fadeInUp}
-            className="bg-gradient-hero rounded-soft p-8 flex flex-col justify-between"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
           >
-            <div>
-              <p className="text-tiny font-semibold tracking-widest uppercase text-amber mb-3">Get Involved</p>
-              <h3 className="font-display text-heading-md text-white mb-4">
-                Want to Make a Direct Difference?
-              </h3>
-              <p className="text-body-sm text-white/70 leading-relaxed mb-6">
-                Whether through donations, volunteering, or partnerships — there are many ways to support our children.
-              </p>
-            </div>
-            <Link
-              to="/donate"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-forest font-semibold text-body-sm rounded-card hover:bg-ivory transition-colors duration-200 self-start group"
-            >
-              Start Donating
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-            </Link>
+            {displayPrograms.map((program) => (
+              <motion.div key={program.id} variants={fadeInUp}>
+                <ProgramCard program={program} />
+              </motion.div>
+            ))}
           </motion.div>
-        </motion.div>
+        )}
 
-        {/* View all programs link */}
-        <div className="text-center mt-12">
+        <div className="text-center">
           <Link
             to="/programs"
-            className="inline-flex items-center gap-2 text-body-md font-semibold text-terracotta group hover:underline"
+            className="inline-flex items-center gap-2 text-body-md font-semibold text-terracotta hover:underline group"
           >
-            View all programs in detail
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+            See all our programs
+            <ArrowRight
+              className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+              aria-hidden="true"
+            />
           </Link>
         </div>
       </div>
     </section>
-  )
+  );
 }
