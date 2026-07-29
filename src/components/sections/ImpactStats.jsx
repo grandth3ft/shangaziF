@@ -36,7 +36,7 @@ export default function ImpactStats() {
           </motion.div>
 
           {/* Stats grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 md:gap-12">
             {IMPACT_STATS.map((stat) => (
               <motion.div
                 key={stat.label}
@@ -58,9 +58,9 @@ export default function ImpactStats() {
           {/* Bottom quote */}
           <motion.div
             variants={fadeInUp}
-            className="mt-16 text-center max-w-2xl mx-auto"
+            className="mt-12 sm:mt-16 text-center max-w-2xl mx-auto px-4"
           >
-            <p className="text-body-lg text-white/60 italic leading-relaxed">
+            <p className="text-base sm:text-body-lg text-white/60 italic leading-relaxed">
               "Behind every number is a child who now has hope, a future, and someone who believed in them."
             </p>
             <p className="text-body-sm text-white/40 mt-3">— Shangazi Foundation Team</p>

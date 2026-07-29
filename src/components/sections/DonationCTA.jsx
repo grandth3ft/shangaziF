@@ -51,21 +51,22 @@ export default function DonationCTA() {
           </motion.p>
 
           {/* Quick amount buttons */}
-          <motion.div variants={fadeInUp} className="flex flex-wrap justify-center gap-3 mb-10">
+          <motion.div variants={fadeInUp} className="grid grid-cols-2 xs:flex xs:flex-wrap justify-center gap-3 mb-10">
             {[500, 1000, 2500, 5000].map((amount) => (
               <Link
                 key={amount}
                 to={`/donate?amount=${amount}`}
-                className="group flex flex-col items-center px-5 py-3 bg-white/20 hover:bg-white/25 border border-white/25 rounded-soft transition-all duration-200 backdrop-blur-sm"
+                className="group flex flex-col items-center px-4 sm:px-5 py-3 bg-white/20 hover:bg-white/25 border border-white/25 rounded-soft transition-all duration-200 backdrop-blur-sm"
               >
                 <span className="font-mono font-bold text-white text-heading-md">
                   {formatCurrency(amount, false)}
                 </span>
-                <span className="text-tiny text-white/60 mt-0.5">
+                <span className="text-tiny text-white/60 mt-0.5 text-center">
                   {AMOUNT_IMPACT_MAP[amount]}
                 </span>
               </Link>
             ))}
+          </motion.div>
           </motion.div>
 
           {/* Primary CTAs */}
